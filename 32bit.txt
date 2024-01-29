@@ -1,0 +1,14 @@
+# this file should force meson to use 32bit compiler... but as of meson 1.3 it doesnt.
+# maybe it will work in the future.... For now just run meson in 32bit visual studio developer console.
+
+[binaries]
+c = 'cl'
+cpp = 'cl'
+ar = 'lib'
+windres = 'rc'
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86'
+cpu = 'i686'
+endian = 'little'

@@ -1,0 +1,9 @@
+# build folder
+bin
+
+# temp folder this tool creates
+temp
+
+# Ignore subprojects
+/subprojects/*
+!/subprojects/*.wrap
