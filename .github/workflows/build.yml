@@ -28,7 +28,7 @@ jobs:
 
       - name: Configure and compile
         run: |
-          meson bin --buildtype release
+          meson setup bin --buildtype release
           meson compile -C bin
 
       - name: Upload artifact
@@ -36,6 +36,6 @@ jobs:
         with:
           name: cem-tool
           path: |
-            ./bin/cem-tool.exe
-            ./mmfs2.dll
+            bin/cem-tool.exe
+            bin/mmfs2.dll
           if-no-files-found: error
