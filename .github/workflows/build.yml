@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 'pypy3.9'
+          cache: 'pip'
+
+      - name: Install meson and ninja
+        run: pip install meson ninja -r requirements.txt
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64_x86
+
+      - name: Configure and compile
+        run: |
+          meson setup bin --buildtype release
+          meson compile -C bin
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cem-tool
+          path: |
+            bin/cem-tool.exe
+            bin/mmfs2.dll
+          if-no-files-found: error
