@@ -110,12 +110,12 @@ std::string fusion::cem_ext_manifest::to_json() {
 
 
 void fusion::extension::open(std::filesystem::path mfx_path) {
-    mfx_path = std::filesystem::absolute(mfx_path);
+    auto mfx_path_str = std::filesystem::absolute(mfx_path).string();
 
-    module_handle = LoadLibraryExW(to_utf16(mfx_path.string()).c_str(), NULL, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
+    module_handle = LoadLibraryExW(to_utf16(mfx_path_str).c_str(), NULL, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
 
     if(module_handle == nullptr) {
-        throw std::exception("LoadLibraryExW failed");
+        throw create_except("Failed to load extension: '%s' error: %d.", mfx_path_str.c_str(), GetLastError());
     }
 
     HMODULE handle = (HMODULE)module_handle;
