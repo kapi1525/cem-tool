@@ -6,6 +6,7 @@
 
 #include "cem_tool.hpp"
 #include "zip_archive.hpp"
+#include "string_helper.hpp"
 
 
 
@@ -47,12 +48,11 @@ int cem_tool::run() {
     // Open the zip file, get all info we can and extract it in 'temp' directory.
     try {
         zip_archive ext_zip;
-        std::string ext_zip_filename = ext_zip_filepath.filename().string();
 
         ext_zip.open(ext_zip_filepath);
 
         std::vector<std::filesystem::path> files = ext_zip.list_files();
-        zip_file_sanity_check(ext_zip_filename, files);
+        zip_file_sanity_check(ext_zip_filepath.stem().string(), files);
 
         editor_mfx = find_editor_mfx(files);
 
@@ -73,7 +73,7 @@ int cem_tool::run() {
         ext_zip.extract("temp");
     }
     catch(const std::exception& e) {
-        std::fprintf(stderr, "%s.\n", e.what());
+        std::fprintf(stderr, "%s\n", e.what());
         return -1;
     }
 
@@ -100,7 +100,7 @@ int cem_tool::run() {
         ext.Free();
     }
     catch(const std::exception& e) {
-        std::fprintf(stderr, "%s.\n", e.what());
+        std::fprintf(stderr, "%s\n", e.what());
         return -1;
     }
 
@@ -119,13 +119,82 @@ cem_tool::~cem_tool() {
 
 
 
-// TODO:
 // Check the zip file structure, make sure:
 // - Ext file names are the same
-// - Required ext files are present
 // - Directory structure is correct
-void cem_tool::zip_file_sanity_check(std::string_view zip_filename, const std::vector<std::filesystem::path>& zip_files) {
-    // zip_filename = <ext_name>.zip
+// - Required ext files are present
+void cem_tool::zip_file_sanity_check(const std::string& ext_name, const std::vector<std::filesystem::path>& zip_files) {
+    // Test all extension runtime and editor files if they have consistent names.
+    // Not realy possible to combine those because capture groups get messed up.
+    const char* name_tests[] = {
+        "Extensions/(?:Unicode/|HWA/)?(.*)\\.mfx",
+        "Data/Runtime/(?:Unicode/|HWA/)?(.*)\\.mfx",
+        "Data/Runtime/Flash/(.*)\\.zip",
+        "Data/Runtime/Android/(.*)\\.zip",
+        "Data/Runtime/iPhone/(.*)\\.ext",
+        "Data/Runtime/Html5/(.*)\\.js",
+        "Data/Runtime/Wua/js/runtime/extensions/source/(.*)\\.js",
+        "Data/Runtime/Mac/(.*)\\.dat",
+        "Data/Runtime/XNA/(?:Phone|Windows|Xbox)/(.*)\\.zip",
+    };
+
+    for (auto &&t : name_tests) {
+        std::smatch match;
+        std::regex test(t);
+
+        for (auto &&f : zip_files) {
+            auto filepath = f.string();
+
+            if(std::regex_search(filepath, match, test) && match[1] != ext_name) {
+                throw create_except("Bad zip file structure: File '%s' is named '%s' but expected '%s'.", filepath.c_str(), match[1].str().c_str(), ext_name.c_str());
+            }
+        }
+    }
+
+    // Check directories in zip file, all must be matched by that massive regex bellow.
+    // Create a copy of the path so the actual array contents stay the same.
+    for (auto f : zip_files) {
+        auto directory = f.remove_filename().string();
+        bool match = false;
+
+        // ...
+        std::regex test("Extensions/(Unicode/|HWA/)?|Data/Runtime/((Unicode/|HWA/)?|Flash/|Android/|iPhone/|Html5/|Wua/js/runtime/extensions/source/|Mac/|XNA/(Phone|Windows|Xbox)/)|Examples/(.*)?|Help/(.*)?");
+        if(!std::regex_match(directory, test)) {
+            throw create_except("Bad zip file structure: Directory '%s' was not recognized, typo?", directory.c_str());
+        }
+    }
+
+    // Check if any editor .mfx is present in Extensions/
+    bool match = false;
+
+    std::regex editor_mfx_regex("Extensions/(Unicode/|HWA/)?.*\\.mfx");
+    for (auto &&f : zip_files) {
+        auto filepath = f.string();
+        if(std::regex_match(filepath, editor_mfx_regex)) {
+            match = true;
+            break;
+        }
+    }
+
+    if(!match) {
+        throw std::exception("Bad zip file structure: The zip file doesnt contain any editor .mfx file.");
+    }
+
+    // Check if at least one runtime extension file is present in Data/Runtime/
+    match = false;
+
+    std::regex runtime_mfx_regex("Data/Runtime/((Unicode/|HWA/)?.*\\.mfx|Flash/.*\\.zip|Android/.*\\.zip|iPhone/.*\\.ext|Html5/.*\\.js|Wua/js/runtime/extensions/source/.*\\.js|Mac/.*\\.dat|XNA/(Phone|Windows|Xbox)/.*\\.zip)");
+    for (auto &&f : zip_files) {
+        auto filepath = f.string();
+        if(std::regex_match(filepath, runtime_mfx_regex)) {
+            match = true;
+            break;
+        }
+    }
+
+    if(!match) {
+        throw std::exception("Bad zip file structure: The zip file doesnt contain any runtime extension file.");
+    }
 }
 
 
@@ -177,11 +246,12 @@ void cem_tool::guess_supported_platforms(fusion::cem_ext_manifest* ext_man, cons
 
 
 std::filesystem::path cem_tool::find_editor_mfx(const std::vector<std::filesystem::path>& zip_files) {
-    std::regex editor_mfx_regex("Extensions/(Unicode/)?.*\\.mfx");
+    std::regex editor_mfx_regex("Extensions/(Unicode/|HWA/)?.*\\.mfx");
 
-    for (auto &&filepath : zip_files) {
-        if(std::regex_match(filepath.string(), editor_mfx_regex)) {
-            std::cout << filepath << std::endl;
+    for (auto &&f : zip_files) {
+        auto filepath = f.string();
+
+        if(std::regex_match(filepath, editor_mfx_regex)) {
             return filepath;
         }
     }

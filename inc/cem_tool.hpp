@@ -21,7 +21,7 @@ private:
 
     std::filesystem::path ext_zip_filepath;
 
-    void zip_file_sanity_check(std::string_view zip_filename, const std::vector<std::filesystem::path>& zip_files);
+    void zip_file_sanity_check(const std::string& ext_name, const std::vector<std::filesystem::path>& zip_files);
 
     void guess_mfx_name(fusion::cem_ext_manifest* ext_man, const std::filesystem::path& editor_mfx_path);
     void guess_supported_platforms(fusion::cem_ext_manifest* ext_man, const std::vector<std::filesystem::path>& zip_files);
