@@ -12,7 +12,7 @@ int wmain(int argc, const wchar_t* argv[]) {
 
     std::vector<std::string> args;
 
-    for (size_t i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
         args.push_back(to_utf8(argv[i]));
     }
 

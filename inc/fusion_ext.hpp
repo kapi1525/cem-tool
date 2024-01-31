@@ -50,7 +50,7 @@ namespace fusion {
         std::uint32_t platforms;            // Supported platforms (platform enum)
         std::string download;               // Download link or lower case mfxname if ext is stored on clickteams server
         time_t time;                        // Modification date and time of the most recent file inside the zip file, used by fusion for update checks
-        std::uint32_t zipsize;              // Size of zip archive
+        std::uintmax_t zipsize;             // Size of zip archive
         std::vector<std::string> files;     // List of all files inside zip archive
 
         std::string to_json();
@@ -80,24 +80,24 @@ namespace fusion {
         class mv {
         public:
             // Common to editor and runtime
-            HINSTANCE HInst; // Application HINSTANCE
-            npAppli IdAppli; // Application object in DLL
-            npWin IdMainWin; // Main window object in DLL
-            npWin IdEditWin; // Child window object in DLL
-            HWND HMainWin; // Main window handle
-            HWND HEditWin; // Child window handle
-            HPALETTE HPal256; // 256 color palette
-            std::uint16_t AppMode; // Screen mode with flags
-            std::uint16_t ScrMode; // Screen mode
-            std::uint32_t EditDXDocToClient; // Edit time only: top-left coordinates
+            HINSTANCE HInst;                        // Application HINSTANCE
+            npAppli IdAppli;                        // Application object in DLL
+            npWin IdMainWin;                        // Main window object in DLL
+            npWin IdEditWin;                        // Child window object in DLL
+            HWND HMainWin;                          // Main window handle
+            HWND HEditWin;                          // Child window handle
+            HPALETTE HPal256;                       // 256 color palette
+            std::uint16_t AppMode;                  // Screen mode with flags
+            std::uint16_t ScrMode;                  // Screen mode
+            std::uint32_t EditDXDocToClient;        // Edit time only: top-left coordinates
             std::uint32_t EditDYDocToClient;
-            CImageFilterMgr* ImgFilterMgr; // Image filter manager
-            CSoundFilterMgr* SndFilterMgr; // Sound filter manager
-            CSoundManager* SndMgr; // Sound manager
+            CImageFilterMgr* ImgFilterMgr;          // Image filter manager
+            CSoundFilterMgr* SndFilterMgr;          // Sound filter manager
+            CSoundManager* SndMgr;                  // Sound manager
 
             union {
-                CEditApp* EditApp; // Current application, edit time (not used)
-                CRunApp* RunApp; // Current application, runtime
+                CEditApp* EditApp;                  // Current application, edit time (not used)
+                CRunApp* RunApp;                    // Current application, runtime
             };
             union {
                 CEditFrame* EditFrame;
@@ -105,11 +105,11 @@ namespace fusion {
             };
 
             // Runtime
-            void* RunHdr;                             // Current RunHeader
-            std::uint32_t Prefs; // Preferences (sound on/off)
+            void* RunHdr;                           // Current RunHeader
+            std::uint32_t Prefs;                    // Preferences (sound on/off)
             LPTSTR subType;
-            int FullScreen; // Full screen mode
-            LPTSTR MainAppFileName; // App filename
+            int FullScreen;                         // Full screen mode
+            LPTSTR MainAppFileName;                 // App filename
             int AppListCount;
             int AppListSize;
             CRunApp** AppList;
