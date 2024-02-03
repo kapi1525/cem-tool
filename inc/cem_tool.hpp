@@ -17,8 +17,14 @@ public:
     int run();
 
 private:
-    const char* usage = "Usage: cem-tool [zip file]\n";
+    const char* usage = "usage: cem-tool [options] [zip file]\n\n"
+                        "  --help           Display this message and exit.\n"
+                        "  --ignore-errors  Ignore zip file structure check errors.\n"
+                        "  --yes            Auto repond all prompts with yes.\n"
+                        "";
 
+    bool ignore_zip_sanity_check_errors = false;
+    bool yes = false;
     std::filesystem::path ext_zip_filepath;
 
     void zip_file_sanity_check(const std::string& ext_name, const std::vector<std::filesystem::path>& zip_files);

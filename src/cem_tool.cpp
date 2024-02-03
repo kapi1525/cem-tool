@@ -11,27 +11,56 @@
 
 
 cem_tool::cem_tool(const std::vector<std::string>& args) {
-    if(args.size() != 2) {
-        std::printf("%s", usage);
+    for (size_t i = 1; i < args.size(); i++) {
+        auto &&arg = args[i];
+
+        // Check if arg is a flag
+        if(arg.compare(0, 2, "--") == 0) {
+            // Look for recognized flags.
+            if(arg == "--help") {
+                std::printf("%s", usage);
+                exit(0);
+            }
+
+            if(arg == "--ignore-errors") {
+                ignore_zip_sanity_check_errors = true;
+                continue;
+            }
+
+            if(arg == "--yes") {
+                yes = true;
+                continue;
+            }
+
+            std::fprintf(stderr, "not recognized a flag: '%s'.\n%s", arg.c_str(), usage);
+            exit(-1);
+        } else {
+            // If not a flag assume its a path to zip file.
+            // Make sure provided file path is valid.
+            ext_zip_filepath = std::filesystem::absolute(args[1]);
+
+            if(!std::filesystem::exists(ext_zip_filepath)) {
+                std::fprintf(stderr, "File doesnt exist.\n%s", usage);
+                exit(-1);
+            }
+
+            if(!std::filesystem::is_regular_file(ext_zip_filepath)) {
+                std::fprintf(stderr, "Not a file.\n%s", usage);
+                exit(-1);
+            }
+
+            if(ext_zip_filepath.extension() != ".zip") {
+                std::fprintf(stderr, "Not a zip file.\n%s", usage);
+                exit(-1);
+            }
+
+            continue;
+        }
+    }
+
+    if(ext_zip_filepath.empty()) {
+        std::printf("No file provided.\n%s", usage);
         exit(0);
-    }
-
-    // Make sure provided file path is valid.
-    ext_zip_filepath = std::filesystem::absolute(args[1]);
-
-    if(!std::filesystem::exists(ext_zip_filepath)) {
-        std::fprintf(stderr, "File dosent exist.\n%s", usage);
-        exit(-1);
-    }
-
-    if(!std::filesystem::is_regular_file(ext_zip_filepath)) {
-        std::fprintf(stderr, "Not a file.\n%s", usage);
-        exit(-1);
-    }
-
-    if(ext_zip_filepath.extension() != ".zip") {
-        std::fprintf(stderr, "Not a zip file.\n%s", usage);
-        exit(-1);
     }
 }
 
@@ -41,8 +70,20 @@ int cem_tool::run() {
     std::filesystem::path editor_mfx;           // Used to get mfx name and gets loaded later.
 
     if(std::filesystem::exists("./temp")) {
+        std::printf("Directory './temp' already exists.\n");
+        if(!yes) {
+            std::printf("Delete './temp' directory? [y/n] ");
+
+            char buf;
+            std::scanf("%1s", &buf);
+
+            if(buf != 'y') {
+                std::printf("Directory './temp' has to be removed before continuing.\n");
+                return 0;
+            }
+        }
         std::printf("Removing './temp' directory...\n");
-        std::filesystem::remove_all("./temp");          // TODO: Maybe ask user before deleting something? Add a flag to remove it without asking?
+        std::filesystem::remove_all("./temp");
     }
 
     // Open the zip file, get all info we can and extract it in 'temp' directory.
@@ -52,7 +93,13 @@ int cem_tool::run() {
         ext_zip.open(ext_zip_filepath);
 
         std::vector<std::filesystem::path> files = ext_zip.list_files();
-        zip_file_sanity_check(ext_zip_filepath.stem().string(), files);
+
+        // TODO: Make this exception madness a bit nicer to look at
+        try { zip_file_sanity_check(ext_zip_filepath.stem().string(), files); }
+        catch(const std::exception& e) {
+            if(ignore_zip_sanity_check_errors) { std::fprintf(stderr, "(ignored) %s\n", e.what()); }
+            else { throw; }
+        }
 
         editor_mfx = find_editor_mfx(files);
 
