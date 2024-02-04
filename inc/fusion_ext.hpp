@@ -276,8 +276,10 @@ namespace fusion {
         void* module_handle = nullptr;
 
         bool is_unicode;
-
         api::mv dummy_mv = {};
+
+        // GetProcAddress wrapper
+        void* get_proc(void* handle, const std::string& proc);
 
         struct {
             std::function<api::ext_funcs::Initialize> Initialize;

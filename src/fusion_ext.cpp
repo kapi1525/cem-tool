@@ -112,22 +112,19 @@ std::string fusion::cem_ext_manifest::to_json() {
 
 void fusion::extension::open(std::filesystem::path mfx_path) {
     auto mfx_path_str = std::filesystem::absolute(mfx_path).string();
-
     module_handle = LoadLibraryExW(to_utf16(mfx_path_str).c_str(), NULL, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
 
     if(module_handle == nullptr) {
-        throw create_except("Failed to load extension: '%s' error: %d.", mfx_path_str.c_str(), GetLastError());
+        throw create_except("Failed to load extension '%s': %s.", mfx_path_str.c_str(), last_system_error().c_str());
     }
 
-    HMODULE handle = (HMODULE)module_handle;
-
     namespace f = fusion::api::ext_funcs;
-    funcs.Initialize = (f::Initialize*)GetProcAddress(handle, "Initialize");
-    funcs.Free = (f::Free*)GetProcAddress(handle, "Free");
-    funcs.GetInfos = (f::GetInfos*)GetProcAddress(handle, "GetInfos");
-    funcs.GetRunObjectInfos = (f::GetRunObjectInfos*)GetProcAddress(handle, "GetRunObjectInfos");
-    funcs.GetObjInfosA = (f::GetObjInfosA*)GetProcAddress(handle, "GetObjInfos");
-    funcs.GetObjInfosW = (f::GetObjInfosW*)GetProcAddress(handle, "GetObjInfos");
+    funcs.Initialize = (f::Initialize*)get_proc(module_handle, "Initialize");
+    funcs.Free = (f::Free*)get_proc(module_handle, "Free");
+    funcs.GetInfos = (f::GetInfos*)get_proc(module_handle, "GetInfos");
+    funcs.GetRunObjectInfos = (f::GetRunObjectInfos*)get_proc(module_handle, "GetRunObjectInfos");
+    funcs.GetObjInfosA = (f::GetObjInfosA*)get_proc(module_handle, "GetObjInfos");
+    funcs.GetObjInfosW = (f::GetObjInfosW*)get_proc(module_handle, "GetObjInfos");
 
     // DarkEdif uses GetVersion in Initialize()
     dummy_mv.GetVersion = []() -> std::uint32_t { return 0; };
@@ -136,7 +133,10 @@ void fusion::extension::open(std::filesystem::path mfx_path) {
 }
 
 void fusion::extension::close() {
-    FreeLibrary((HMODULE)module_handle);
+    if(!FreeLibrary((HMODULE)module_handle)) {
+        throw create_except("FreeLibrary failed: %s.", last_system_error().c_str());
+    }
+
     module_handle = 0;
 }
 
@@ -193,4 +193,15 @@ void fusion::extension::GetObjInfos(ext_infos* infos_ptr) {
         infos_ptr->comment = comment;
         infos_ptr->website = website;
     }
+}
+
+
+void* fusion::extension::get_proc(void* handle, const std::string& proc) {
+    auto ret = GetProcAddress((HMODULE)handle, proc.c_str());
+
+    if(!ret) {
+        throw create_except("Failed to get funcion '%s': %s.", proc.c_str(), last_system_error().c_str());
+    }
+
+    return ret;
 }

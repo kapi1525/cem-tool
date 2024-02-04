@@ -30,6 +30,8 @@ T create_except(const char* fmt...) {
     return ret;
 }
 
+std::string last_system_error();
+
 
 class windows_utf8_in_console {
 public:

@@ -88,6 +88,36 @@ std::wstring to_utf16(std::string_view utf8_str) {
 }
 
 
+std::string last_system_error() {
+    const size_t buf_size = 256;
+    wchar_t buf[buf_size];
+    std::uint32_t last_error = GetLastError();
+
+    std::uint32_t written = FormatMessageW(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        last_error,
+        0,
+        buf,
+        buf_size,
+        nullptr
+    );
+
+    if(written < 3) {
+        return "Failed to format error message, good luck with debugging";
+    }
+
+    // written-3 to ignore "./r/n" at the end of error message.
+    auto system_error_str = to_utf8(std::wstring_view(buf, written-3));
+
+    const size_t ret_buf_size = 256;
+    char ret_buf[ret_buf_size];
+
+    std::snprintf(ret_buf, ret_buf_size, "(%u) %s", last_error, system_error_str.c_str());
+    return ret_buf;
+}
+
+
 
 windows_utf8_in_console::windows_utf8_in_console() {
     before_codepage = GetConsoleCP();
