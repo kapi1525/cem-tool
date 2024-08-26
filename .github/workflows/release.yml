@@ -1,8 +1,8 @@
-name: Build
+name: Build release
 
 on:
-  push:
-  workflow_dispatch:
+  release:
+    types: published
 
 jobs:
   build:
@@ -14,17 +14,10 @@ jobs:
         with:
           submodules: true
 
-      - name: Cache subprojects
-        uses: actions/cache@v4
-        with:
-          path: subprojects/packagecache/
-          key: ${{ hashFiles('subprojects/*.wrap') }}
-
       - name: Setup python
         uses: actions/setup-python@v5
         with:
           python-version: 'pypy3.9'
-          cache: 'pip'
 
       - name: Install meson and ninja
         run: pip install meson ninja -r requirements.txt
@@ -40,11 +33,11 @@ jobs:
       - name: Compile
         run: meson compile -C bin
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create zip
+        run: tar -acvf "cem-tool-${{ github.ref_name }}.zip" -C bin cem-tool.exe mmfs2.dll
+
+      - name: Upload release
+        uses: AButler/upload-release-assets@v3.0
         with:
-          name: cem-tool
-          path: |
-            bin/cem-tool.exe
-            bin/mmfs2.dll
-          if-no-files-found: error
+          files: 'cem-tool-${{ github.ref_name }}.zip'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
