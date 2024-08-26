@@ -1,7 +1,7 @@
 project(
     'cem-tool',
     'cpp', 'c',
-    version: '0.1.0',
+    version: '1.0.0',
     license: 'MIT',
     default_options: ['warning_level=1', 'cpp_std=c++17', 'c_std=c11', 'default_library=static'],
     meson_version: '>=1.0',
@@ -54,6 +54,6 @@ cem_tool = executable(
 
 fs = import('fs')
 
-# mmfs2.dll i required to open extension dlls.
+# mmfs2.dll is required to open extension dlls.
 # this dll was copied from fusion 295.10.
 fs.copyfile('lib/mmfs2.dll', 'mmfs2.dll')

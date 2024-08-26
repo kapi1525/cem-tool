@@ -21,6 +21,7 @@ private:
                         "  --help           Display this message and exit.\n"
                         "  --ignore-errors  Ignore zip file structure check errors.\n"
                         "  --yes            Auto repond all prompts with yes.\n"
+                        "  --version        Show version info.\n"
                         "";
 
     bool ignore_zip_sanity_check_errors = false;

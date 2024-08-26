@@ -22,6 +22,11 @@ cem_tool::cem_tool(const std::vector<std::string>& args) {
                 exit(0);
             }
 
+            if(arg == "--version") {
+                std::printf("cem-tool v1.0.0\n\n");
+                exit(0);
+            }
+
             if(arg == "--ignore-errors") {
                 ignore_zip_sanity_check_errors = true;
                 continue;
