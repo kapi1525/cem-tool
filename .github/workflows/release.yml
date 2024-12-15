@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+          persist-credentials: false
 
       - name: Setup python
         uses: actions/setup-python@v5
@@ -20,24 +21,23 @@ jobs:
           python-version: 'pypy3.9'
 
       - name: Install meson and ninja
-        run: pip install meson ninja -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: amd64_x86
 
       - name: Configure
         run: meson setup bin --buildtype release
 
       - name: Compile
-        run: meson compile -C bin
+        run: meson install -C bin --destdir ../out
 
       - name: Create zip
-        run: tar -acvf "cem-tool-${{ github.ref_name }}.zip" -C bin cem-tool.exe mmfs2.dll
+        working-directory: out
+        run: 7z a "../cem-tool-${{ github.ref_name }}-${{ runner.os }}.zip" "*"
 
       - name: Upload release
         uses: AButler/upload-release-assets@v3.0
         with:
-          files: 'cem-tool-${{ github.ref_name }}.zip'
+          files: 'cem-tool-${{ github.ref_name }}-${{ runner.os }}.zip'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
