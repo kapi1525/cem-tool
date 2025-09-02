@@ -46,7 +46,6 @@ cem_tool = executable(
     'cem-tool',
     cem_tool_files,
     cpp_args: cem_tool_args,
-    dependencies: deps,
     dependencies: cem_tool_deps,
     include_directories: cem_tool_inc,
     install: true,
