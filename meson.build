@@ -12,7 +12,7 @@ cem_tool_args = []
 
 # fun
 # minizip depends on zlib to support file compression/decompression
-meson.override_dependency('zlib', subproject('zlib').get_variable('zlib_dep'))
+subproject('zlib')
 
 cem_tool_deps = [
     dependency('threads'),
