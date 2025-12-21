@@ -12,9 +12,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          submodules: true
-          persist-credentials: false
 
       - name: Cache subprojects
         uses: actions/cache@v4
@@ -40,11 +37,13 @@ jobs:
         run: meson setup bin --buildtype release
 
       - name: Compile
-        run: meson install -C bin --destdir ../out
+        run: meson compile -C bin
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
-          name: cem-tool-${{ runner.os }}
-          path: out/*
+          name: cem-tool
+          path: |
+            bin/cem-tool.exe
+            bin/mmfs2.dll
           if-no-files-found: error

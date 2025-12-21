@@ -11,9 +11,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          submodules: true
-          persist-credentials: false
 
       - name: Setup python
         uses: actions/setup-python@v6
@@ -25,19 +22,21 @@ jobs:
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64_x86
 
       - name: Configure
         run: meson setup bin --buildtype release
 
       - name: Compile
-        run: meson install -C bin --destdir ../out
+        run: meson compile -C bin
 
       - name: Create zip
         working-directory: out
-        run: 7z a "../cem-tool-${{ github.ref_name }}-${{ runner.os }}.zip" "*"
+        run: 7z a "../cem-tool-${{ github.ref_name }}.zip" "cem_tool.exe" "mmfs2.dll"
 
       - name: Upload release
         uses: AButler/upload-release-assets@v3.0
         with:
-          files: 'cem-tool-${{ github.ref_name }}-${{ runner.os }}.zip'
+          files: 'cem-tool-${{ github.ref_name }}.zip'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
