@@ -167,7 +167,9 @@ namespace fusion {
             std::uint32_t (__stdcall* GetVersion)();
 
             // Editor & Runtime: callback function for properties or other functions
-            void* CallFunction;
+            int (*CallFunction) (void* edPtr, int nFnc, int lParam1, int lParam2, int lParam3) = [](void* edPtr, int nFnc, int lParam1, int lParam2, int lParam3) -> int {
+                return 0;
+            };
 
             // Editor: Open Help file (UNICODE)
             void* HelpW;
