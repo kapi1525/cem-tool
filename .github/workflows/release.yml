@@ -26,7 +26,7 @@ jobs:
           arch: amd64_x86
 
       - name: Configure
-        run: meson setup bin --buildtype release
+        run: meson setup bin
 
       - name: Compile
         run: meson compile -C bin
