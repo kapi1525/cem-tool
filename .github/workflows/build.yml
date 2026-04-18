@@ -3,47 +3,68 @@ name: Build
 on:
   push:
     branches:
-      - '*'     # dont build for tags
+      - '*'
+    tags:
+      - '*'
+  pull_request:
+  workflow_dispatch:
+
+
+# Cancel already running ci on a new push
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
+
+    env:
+      BUNDLE_NAME_TAG: cem-tool-${{ github.ref_name }}-x86-windows
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Cache subprojects
-        uses: actions/cache@v5
-        with:
-          path: subprojects/packagecache/
-          key: ${{ hashFiles('subprojects/*.wrap') }}
+      - name: Fetch tags
+        if: startsWith(github.ref, 'refs/tags')
+        run: git fetch --tags --force
 
       - name: Setup python
         uses: actions/setup-python@v6
         with:
-          python-version: 'pypy3.9'
-          cache: 'pip'
+          python-version: 'pypy3.11'
 
       - name: Install meson and ninja
-        run: pip install -r requirements.txt
+        run: pip install meson ninja
 
       - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: TheMrMilchmann/setup-msvc-dev@v4.0.0
         with:
-          arch: amd64_x86
+          arch: x86
 
       - name: Configure
         run: meson setup bin
 
       - name: Compile
-        run: meson compile -C bin
+        run: meson compile -C bin -v
+
+      - name: Create release zip
+        working-directory: bin
+        run: 7z a "../${{ env.BUNDLE_NAME_TAG }}.zip" "cem-tool.exe" "mmfs2.dll"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: cem-tool
+          name: dist
           path: |
-            bin/cem-tool.exe
-            bin/mmfs2.dll
+            ${{ env.BUNDLE_NAME_TAG }}.zip
           if-no-files-found: error
+
+      - name: Create draft release
+        if: startsWith(github.ref, 'refs/tags')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ github.ref_name }} --draft --prerelease --notes-from-tag ${{ env.BUNDLE_NAME_TAG }}.zip
