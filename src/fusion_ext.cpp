@@ -71,20 +71,11 @@ static std::string supported_platforms(fusion::cem_ext_manifest* ext) {
 static std::string last_modification_time(fusion::cem_ext_manifest* ext) {
     char buf[sizeof("YYYY.MM.DD:HH.MM.SS")];
 
-    tm local;
-    localtime_s(&local, &ext->time);
+    tm formated_time;
+    gmtime_s(&formated_time, &ext->time);
 
-    // magic
-    // Original ZipToJson tool ignores DST so try to ignore it as well... This maybe works?
-    if(local.tm_isdst) {
-        local.tm_hour--;
-        if(local.tm_hour == -1) {
-            local.tm_hour = 23;
-        }
-    }
-
-    std::strftime(buf, sizeof(buf), "%Y.%m.%d:%H.%M.%S", &local);
-    // std::printf("local %s %i\n", buf, local->tm_isdst);
+    // This is off by one second for some reason, should creation date be checked as well?
+    std::strftime(buf, sizeof(buf), "%Y.%m.%d:%H.%M.%S", &formated_time);
 
     return buf;
 }
