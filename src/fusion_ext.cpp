@@ -96,7 +96,7 @@ std::string fusion::cem_ext_manifest::to_json() {
         {"files", files_array(this)}
     };
 
-    return j.dump(4);   // 4 Spaces
+    return j.dump(1, '\t');     // tabs indent
 }
 
 
