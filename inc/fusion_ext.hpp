@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include <functional>
-#include <cinttypes>
+#include <cstdint>
 
 
 
@@ -230,12 +229,12 @@ namespace fusion {
 
         // Some functions extensions export
         namespace ext_funcs {
-            using Initialize = short (mv* mV, int quiet);
-            using Free = int (mv* mV);
-            using GetInfos = std::uint32_t (int info);
-            using GetRunObjectInfos = short (mv* mV, kpxRunInfos* infoPtr);
-            using GetObjInfosA = void (mv* mV, void* edPtr, char* ObjName, char* ObjAuthor, char* ObjCopyright, char* ObjComment, char* ObjHttp);
-            using GetObjInfosW = void (mv* mV, void* edPtr, wchar_t* ObjName, wchar_t* ObjAuthor, wchar_t* ObjCopyright, wchar_t* ObjComment, wchar_t* ObjHttp);
+            using Initialize = short (__stdcall *)(mv* mV, int quiet);
+            using Free = int (__stdcall *)(mv* mV);
+            using GetInfos = std::uint32_t (__stdcall *)(int info);
+            using GetRunObjectInfos = short (__stdcall *)(mv* mV, kpxRunInfos* infoPtr);
+            using GetObjInfosA = void (__stdcall *)(mv* mV, void* edPtr, char* ObjName, char* ObjAuthor, char* ObjCopyright, char* ObjComment, char* ObjHttp);
+            using GetObjInfosW = void (__stdcall *)(mv* mV, void* edPtr, wchar_t* ObjName, wchar_t* ObjAuthor, wchar_t* ObjCopyright, wchar_t* ObjComment, wchar_t* ObjHttp);
         }
     }
 
@@ -284,12 +283,12 @@ namespace fusion {
         void* get_proc(void* handle, const std::string& proc);
 
         struct {
-            std::function<api::ext_funcs::Initialize> Initialize;
-            std::function<api::ext_funcs::Free> Free;
-            std::function<api::ext_funcs::GetInfos> GetInfos;
-            std::function<api::ext_funcs::GetRunObjectInfos> GetRunObjectInfos;
-            std::function<api::ext_funcs::GetObjInfosA> GetObjInfosA;
-            std::function<api::ext_funcs::GetObjInfosW> GetObjInfosW;
+            api::ext_funcs::Initialize Initialize;
+            api::ext_funcs::Free Free;
+            api::ext_funcs::GetInfos GetInfos;
+            api::ext_funcs::GetRunObjectInfos GetRunObjectInfos;
+            api::ext_funcs::GetObjInfosA GetObjInfosA;
+            api::ext_funcs::GetObjInfosW GetObjInfosW;
         } funcs;
     };
 }

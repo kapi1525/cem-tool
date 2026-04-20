@@ -1,7 +1,5 @@
-#include <cinttypes>
+#include <cstdint>
 #include <filesystem>
-#include <exception>
-#include <iostream>
 #include "fusion_ext.hpp"
 #include "string_helper.hpp"
 
@@ -110,12 +108,12 @@ void fusion::extension::open(std::filesystem::path mfx_path) {
     }
 
     namespace f = fusion::api::ext_funcs;
-    funcs.Initialize = (f::Initialize*)get_proc(module_handle, "Initialize");
-    funcs.Free = (f::Free*)get_proc(module_handle, "Free");
-    funcs.GetInfos = (f::GetInfos*)get_proc(module_handle, "GetInfos");
-    funcs.GetRunObjectInfos = (f::GetRunObjectInfos*)get_proc(module_handle, "GetRunObjectInfos");
-    funcs.GetObjInfosA = (f::GetObjInfosA*)get_proc(module_handle, "GetObjInfos");
-    funcs.GetObjInfosW = (f::GetObjInfosW*)get_proc(module_handle, "GetObjInfos");
+    funcs.Initialize = (f::Initialize)get_proc(module_handle, "Initialize");
+    funcs.Free = (f::Free)get_proc(module_handle, "Free");
+    funcs.GetInfos = (f::GetInfos)get_proc(module_handle, "GetInfos");
+    funcs.GetRunObjectInfos = (f::GetRunObjectInfos)get_proc(module_handle, "GetRunObjectInfos");
+    funcs.GetObjInfosA = (f::GetObjInfosA)get_proc(module_handle, "GetObjInfos");
+    funcs.GetObjInfosW = (f::GetObjInfosW)get_proc(module_handle, "GetObjInfos");
 
     // DarkEdif uses GetVersion in Initialize()
     dummy_mv.GetVersion = []() -> std::uint32_t { return 0; };
@@ -194,5 +192,5 @@ void* fusion::extension::get_proc(void* handle, const std::string& proc) {
         throw create_except("Failed to get funcion '%s': %s.", proc.c_str(), last_system_error().c_str());
     }
 
-    return ret;
+    return (void*)ret;
 }
