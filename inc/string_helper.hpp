@@ -25,7 +25,7 @@ T create_except(const char* fmt...) {
     va_end(args);
 
     auto ret = T(buffer);
-    delete buffer;
+    delete[] buffer;
 
     return ret;
 }
