@@ -29,10 +29,6 @@ cem_tool_files = files(
     'src/string_helper.cpp',
 )
 
-cem_tool_inc = include_directories(
-    'inc',
-)
-
 
 if host_machine.cpu_family() != 'x86'
     error('This tool requires to be 32bit to load extensions and extract info from them, current compiler is targeting: ' + host_machine.cpu() + '.')
@@ -41,13 +37,16 @@ if host_machine.cpu_family() != 'x86'
     # cem_tool_args += '-DNO_EXT_LOAD'
 endif
 
+if host_machine.system() != 'windows'
+    error('This tool currently only supports windows, current compiler is targeting: ' + host_machine.system() + '.')
+endif
+
 
 cem_tool = executable(
     'cem-tool',
     cem_tool_files,
     cpp_args: cem_tool_args,
     dependencies: cem_tool_deps,
-    include_directories: cem_tool_inc,
     install: true,
 )
 

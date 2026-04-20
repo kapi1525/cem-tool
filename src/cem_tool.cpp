@@ -23,7 +23,7 @@ cem_tool::cem_tool(const std::vector<std::string>& args) {
             }
 
             if(arg == "--version") {
-                std::printf("cem-tool v1.0.0\n\n");
+                std::printf("cem-tool v1.0.2\n\n");
                 exit(0);
             }
 
@@ -80,7 +80,7 @@ int cem_tool::run() {
             std::printf("Delete './temp' directory? [y/n] ");
 
             char buf;
-            std::scanf("%1s", &buf);
+            std::scanf("%c", &buf);
 
             if(buf != 'y') {
                 std::printf("Directory './temp' has to be removed before continuing.\n");
@@ -111,6 +111,9 @@ int cem_tool::run() {
                 ext_man.time = e.modified_date;
             }
         }
+
+        // Seems like original tool adds one second
+        ext_man.time++;
 
         for (auto &&f : files) {
             ext_man.files.push_back(f.string());

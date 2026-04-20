@@ -115,9 +115,6 @@ void fusion::extension::open(std::filesystem::path mfx_path) {
     funcs.GetObjInfosA = (f::GetObjInfosA)get_proc(module_handle, "GetObjInfos");
     funcs.GetObjInfosW = (f::GetObjInfosW)get_proc(module_handle, "GetObjInfos");
 
-    // DarkEdif uses GetVersion in Initialize()
-    dummy_mv.GetVersion = []() -> std::uint32_t { return 0; };
-
     is_unicode = GetInfos(ext_general_infos::unicode);
 }
 

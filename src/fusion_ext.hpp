@@ -163,7 +163,9 @@ namespace fusion {
             void* NetCommandA;
 
             // Editor & Runtime: Returns the version of MMF or of the runtime
-            std::uint32_t (__stdcall* GetVersion)();
+            std::uint32_t (__stdcall* GetVersion)() = []() -> std::uint32_t {
+                return 0;
+            };
 
             // Editor & Runtime: callback function for properties or other functions
             int (*CallFunction) (void* edPtr, int nFnc, int lParam1, int lParam2, int lParam3) = [](void* edPtr, int nFnc, int lParam1, int lParam2, int lParam3) -> int {
